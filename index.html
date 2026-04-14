@@ -6,46 +6,43 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Meal Planner">
+<meta name="apple-mobile-web-app-title" content="Weekly Meals">
 <meta name="theme-color" content="#0d0d0d">
-<title>Meal Planner</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="meal-icon-192.png">
+<title>Weekly Meals</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d0d0d;
-    --surface: #161616;
-    --surface2: #1f1f1f;
-    --border: #2c2c2c;
-    --text: #f5f0e8;
-    --muted: #5a5a5a;
-    --accent: #e8c17a;
-    --accent2: #b87333;
-    --green: #6fcf97;
-    --green-bg: #0d2018;
-    --red: #eb5757;
-    --red-bg: #240e0e;
+    --bg: #0d0d0d; --surface: #161616; --surface2: #1f1f1f; --border: #2c2c2c;
+    --text: #f5f0e8; --muted: #5a5a5a; --accent: #e8c17a; --accent2: #b87333;
+    --green: #6fcf97; --green-bg: #0d2018; --red: #eb5757; --red-bg: #240e0e;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; padding-bottom: 100px; padding-top: env(safe-area-inset-top); }
 
-  .header { padding: 2rem 1.25rem 0.5rem; }
+  .header { padding: 2rem 1.25rem 0.75rem; }
   .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
-  .header h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 400; line-height: 1.1; }
-  .header h1 em { font-style: italic; color: var(--accent); }
-  .reset-btn { background: var(--red-bg); border: 1px solid var(--red); border-radius: 99px; padding: 7px 14px; font-size: 11px; color: var(--red); font-family: 'Outfit', sans-serif; cursor: pointer; margin-top: 6px; }
-  .week-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 6px; }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 44px; height: 44px; background: #1a1608; border: 1px solid var(--accent2); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo-icon svg { width: 24px; height: 24px; }
+  .logo-text { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 400; line-height: 1; }
+  .logo-text em { font-style: italic; color: var(--accent); }
+  .reset-btn { background: var(--red-bg); border: 1px solid var(--red); border-radius: 99px; padding: 7px 14px; font-size: 11px; color: var(--red); font-family: 'Outfit', sans-serif; cursor: pointer; margin-top: 4px; flex-shrink: 0; }
+  .week-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 8px; padding-left: 56px; }
 
-  .days-list { padding: 1.25rem 1.25rem 0; display: flex; flex-direction: column; gap: 10px; }
+  .days-list { padding: 1rem 1.25rem 0; display: flex; flex-direction: column; gap: 10px; }
 
   .day-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; transition: border-color 0.2s; }
-  .day-card.has-recipe { border-color: #2a2a1a; }
+  .day-card.has-recipe { border-color: #3a3010; }
   .day-header { display: flex; align-items: center; gap: 12px; padding: 0.9rem 1rem; cursor: pointer; }
   .day-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; transition: background 0.2s; }
   .day-card.has-recipe .day-dot { background: var(--accent); }
-  .day-name { font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); flex: 1; }
+  .day-name { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); width: 80px; flex-shrink: 0; }
   .day-card.has-recipe .day-name { color: var(--text); }
-  .day-meal { font-size: 14px; color: var(--accent); font-family: 'Playfair Display', serif; font-style: italic; flex: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .day-chevron { color: var(--muted); font-size: 12px; transition: transform 0.2s; }
+  .day-meal { font-size: 14px; color: var(--accent); font-family: 'Playfair Display', serif; font-style: italic; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .day-empty { font-size: 13px; color: var(--muted); flex: 1; }
+  .day-chevron { color: var(--muted); font-size: 11px; transition: transform 0.2s; flex-shrink: 0; }
   .day-card.open .day-chevron { transform: rotate(180deg); }
 
   .day-body { display: none; border-top: 1px solid var(--border); padding: 1rem; }
@@ -56,31 +53,31 @@
   .field-input:focus { border-color: var(--accent); }
   .field-input::placeholder { color: var(--muted); }
 
-  .ai-btn { width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #1a1608, #2a2010); border: 1px solid var(--accent2); border-radius: 12px; color: var(--accent); font-size: 13px; font-weight: 500; font-family: 'Outfit', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; margin-bottom: 10px; }
-  .ai-btn:active { opacity: 0.8; transform: scale(0.98); }
-  .ai-btn.loading { opacity: 0.7; pointer-events: none; }
-  .ai-btn .spinner { width: 14px; height: 14px; border: 2px solid var(--accent2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  .ai-btn { width: 100%; padding: 0.75rem; background: #1a1608; border: 1px solid var(--accent2); border-radius: 12px; color: var(--accent); font-size: 13px; font-weight: 500; font-family: 'Outfit', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; transition: opacity 0.2s; }
+  .ai-btn:active { opacity: 0.8; }
+  .ai-btn.loading { opacity: 0.6; pointer-events: none; }
+  .spinner { width: 14px; height: 14px; border: 2px solid var(--accent2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .ingredients-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 10px; }
-  .ingredients-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-  .edit-ing-btn { color: var(--accent); font-size: 11px; cursor: pointer; background: none; border: none; font-family: 'Outfit', sans-serif; }
+  .ing-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .ing-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .edit-ing-btn { color: var(--accent); font-size: 11px; cursor: pointer; background: none; border: none; font-family: 'Outfit', sans-serif; padding: 0; }
   .ingredient-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
-  .ingredient-list li { font-size: 13px; color: var(--text); display: flex; align-items: baseline; gap: 7px; }
+  .ingredient-list li { font-size: 13px; color: var(--text); display: flex; align-items: baseline; gap: 7px; line-height: 1.4; }
   .ingredient-list li::before { content: '·'; color: var(--accent); font-size: 16px; line-height: 1; flex-shrink: 0; }
-  .ingredients-textarea { width: 100%; background: transparent; border: none; outline: none; color: var(--text); font-size: 13px; font-family: 'Outfit', sans-serif; resize: none; line-height: 1.6; min-height: 80px; }
+  .ingredients-textarea { width: 100%; background: transparent; border: none; outline: none; color: var(--text); font-size: 13px; font-family: 'Outfit', sans-serif; resize: none; line-height: 1.7; min-height: 80px; }
 
-  .link-row { display: flex; gap: 8px; align-items: center; }
+  .link-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
   .link-row .field-input { margin-bottom: 0; flex: 1; }
   .open-link-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 0.65rem 0.85rem; color: var(--accent); font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 
   .save-btn { width: 100%; padding: 0.75rem; background: var(--accent); color: #0d0d0d; border: none; border-radius: 12px; font-size: 14px; font-weight: 500; font-family: 'Outfit', sans-serif; cursor: pointer; }
   .save-btn:active { opacity: 0.85; }
-
   .clear-day-btn { width: 100%; padding: 0.6rem; background: none; border: 1px solid var(--border); border-radius: 10px; font-size: 12px; color: var(--muted); font-family: 'Outfit', sans-serif; cursor: pointer; margin-top: 6px; }
 
-  .summary-bar { margin: 1.5rem 1.25rem 0; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1rem 1.25rem; }
-  .summary-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 10px; }
+  .summary-bar { margin: 1.25rem 1.25rem 0; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1rem 1.25rem; }
+  .summary-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 8px; }
   .summary-count { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--accent); line-height: 1; }
   .summary-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
   .all-ingredients { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
@@ -99,33 +96,36 @@
 
 <div class="header">
   <div class="header-top">
-    <div>
-      <h1>Weekly<br><em>Meals</em></h1>
-      <div class="week-label" id="weekLabel"></div>
+    <div class="logo-wrap">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 3v4c0 1.1.9 2 2 2h0c1.1 0 2-.9 2-2V3" stroke="#e8c17a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M10 9v12" stroke="#e8c17a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M16 3v18" stroke="#e8c17a" stroke-width="2" stroke-linecap="round"/>
+          <path d="M16 9c1.7 0 3-1.3 3-3V3" stroke="#e8c17a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="logo-text">Weekly<br><em>Meals</em></div>
     </div>
-    <button class="reset-btn" onclick="resetAll()">↺ Reset week</button>
+    <button class="reset-btn" onclick="resetAll()">↺ Reset</button>
   </div>
+  <div class="week-label" id="weekLabel"></div>
 </div>
 
 <div class="days-list" id="daysList"></div>
-
 <div class="summary-bar" id="summaryBar"></div>
 
 <script>
 const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-const DAYS_FR = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
-
-let state = JSON.parse(localStorage.getItem('mealplanner_v1') || 'null') || {
-  meals: DAYS.map(d => ({ day: d, name: '', link: '', ingredients: [], editingIng: false }))
+let state = JSON.parse(localStorage.getItem('mealplanner_v2') || 'null') || {
+  meals: DAYS.map(d => ({ day: d, name: '', link: '', ingredients: [], editing: false }))
 };
-
 if (state.meals.length !== 7) {
-  state.meals = DAYS.map((d, i) => state.meals[i] || { day: d, name: '', link: '', ingredients: [] });
+  state.meals = DAYS.map((d,i) => state.meals[i] || { day:d, name:'', link:'', ingredients:[], editing:false });
 }
-
 let openDay = null;
 
-function save() { localStorage.setItem('mealplanner_v1', JSON.stringify(state)); }
+function save() { localStorage.setItem('mealplanner_v2', JSON.stringify(state)); }
 
 function showToast(msg, type) {
   const t = document.getElementById('toast');
@@ -135,47 +135,35 @@ function showToast(msg, type) {
 
 function resetAll() {
   if (!confirm('Reset all meals for this week?')) return;
-  state.meals = DAYS.map(d => ({ day: d, name: '', link: '', ingredients: [] }));
+  state.meals = DAYS.map(d => ({ day:d, name:'', link:'', ingredients:[], editing:false }));
   openDay = null; save(); render();
 }
 
 function toggleDay(i) {
   openDay = openDay === i ? null : i;
   render();
-  if (openDay === i) {
-    setTimeout(() => {
-      const card = document.getElementById('card-' + i);
-      card && card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 100);
-  }
+  if (openDay === i) setTimeout(() => {
+    document.getElementById('card-'+i)?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }, 100);
 }
 
 async function generateIngredients(i) {
-  const meal = state.meals[i];
-  const name = document.getElementById('name-' + i).value.trim();
-  const link = document.getElementById('link-' + i).value.trim();
+  const name = document.getElementById('name-'+i).value.trim();
+  const link = document.getElementById('link-'+i).value.trim();
+  if (!name && !link) { showToast('Enter a dish name or link first', 'err'); return; }
 
-  if (!name && !link) {
-    showToast('Enter a dish name or link first', 'err'); return;
-  }
-
-  const btn = document.getElementById('aibtn-' + i);
+  const btn = document.getElementById('aibtn-'+i);
   btn.classList.add('loading');
-  btn.innerHTML = '<div class="spinner"></div> Generating ingredients...';
+  btn.innerHTML = '<div class="spinner"></div> Generating...';
 
-  const prompt = link
-    ? `You are a cooking assistant. The user is cooking: "${name || 'a dish'}" (recipe from: ${link}).
-Generate a clear, practical ingredient list in English for this recipe.
-Respond ONLY with a JSON array of strings, each string being one ingredient with quantity.
-Example: ["2 chicken breasts","1 cup rice","3 garlic cloves","salt and pepper"]
-No preamble, no markdown, just the JSON array.`
-    : `You are a cooking assistant. Generate a standard ingredient list in English for: "${name}".
-Respond ONLY with a JSON array of strings, each string being one ingredient with quantity.
-Example: ["2 chicken breasts","1 cup rice","3 garlic cloves","salt and pepper"]
-No preamble, no markdown, just the JSON array.`;
+  const prompt = `You are a cooking assistant. Generate a practical ingredient list in English for: "${name || 'the dish from ' + link}".
+${link ? 'Recipe reference: ' + link : ''}
+Respond ONLY with a JSON array of strings. Each string = one ingredient with quantity.
+Example: ["2 chicken breasts","1 cup basmati rice","3 garlic cloves","1 tsp cumin","salt and pepper to taste"]
+No preamble, no markdown, no explanation. Just the raw JSON array.`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -184,139 +172,111 @@ No preamble, no markdown, just the JSON array.`;
         messages: [{ role: 'user', content: prompt }]
       })
     });
-
-    const data = await response.json();
+    const data = await res.json();
     const raw = data.content?.[0]?.text || '[]';
-    const clean = raw.replace(/```json|```/g, '').trim();
+    const clean = raw.replace(/```json|```/g,'').trim();
     const ingredients = JSON.parse(clean);
-
-    state.meals[i].name = name || state.meals[i].name;
-    state.meals[i].link = link || state.meals[i].link;
-    state.meals[i].ingredients = ingredients;
-    save(); render();
-    openDay = i;
-    render();
+    state.meals[i] = { ...state.meals[i], name: name || state.meals[i].name, link: link || state.meals[i].link, ingredients, editing: false };
+    save(); openDay = i; render();
     showToast('✓ Ingredients generated!', 'ok');
-  } catch (e) {
-    showToast('Error — check connection', 'err');
+  } catch(e) {
+    showToast('Error — try again', 'err');
     btn.classList.remove('loading');
     btn.innerHTML = '✦ Generate ingredients with AI';
   }
 }
 
 function saveMeal(i) {
-  const name = document.getElementById('name-' + i).value.trim();
-  const link = document.getElementById('link-' + i).value.trim();
-  const ingTextarea = document.getElementById('ing-textarea-' + i);
-  let ingredients = state.meals[i].ingredients;
-
-  if (ingTextarea) {
-    ingredients = ingTextarea.value.split('\n').map(l => l.trim()).filter(Boolean);
-  }
-
-  state.meals[i] = { ...state.meals[i], name, link, ingredients };
+  const name = document.getElementById('name-'+i).value.trim();
+  const link = document.getElementById('link-'+i).value.trim();
+  const ta = document.getElementById('ing-textarea-'+i);
+  const ingredients = ta ? ta.value.split('\n').map(l=>l.trim()).filter(Boolean) : state.meals[i].ingredients;
+  state.meals[i] = { ...state.meals[i], name, link, ingredients, editing: false };
   save(); openDay = null; render();
   showToast('✓ Saved!', 'ok');
 }
 
 function clearDay(i) {
   if (!confirm('Clear this day?')) return;
-  state.meals[i] = { day: DAYS[i], name: '', link: '', ingredients: [] };
+  state.meals[i] = { day:DAYS[i], name:'', link:'', ingredients:[], editing:false };
   save(); openDay = null; render();
 }
 
 function openLink(i) {
-  const link = document.getElementById('link-' + i).value.trim();
+  const link = document.getElementById('link-'+i)?.value.trim() || state.meals[i].link;
   if (link) window.open(link, '_blank');
   else showToast('No link entered', 'err');
 }
 
+function toggleEdit(i) {
+  state.meals[i].editing = !state.meals[i].editing;
+  save(); openDay = i; render();
+}
+
 function render() {
-  const list = document.getElementById('daysList');
-  list.innerHTML = DAYS.map((day, i) => {
-    const meal = state.meals[i];
-    const hasRecipe = meal.name || meal.ingredients.length > 0;
+  document.getElementById('daysList').innerHTML = DAYS.map((day, i) => {
+    const m = state.meals[i];
+    const hasRecipe = !!(m.name || m.ingredients.length);
     const isOpen = openDay === i;
 
-    const ingHtml = meal.ingredients.length > 0 ? `
-      <div class="ingredients-box">
-        <div class="ingredients-title">
-          <span>Ingredients</span>
-          <button class="edit-ing-btn" onclick="toggleEditIng(${i})">edit</button>
+    let ingSection = '';
+    if (m.ingredients.length > 0) {
+      ingSection = `<div class="ingredients-box">
+        <div class="ing-header">
+          <span class="ing-title">Ingredients (${m.ingredients.length})</span>
+          <button class="edit-ing-btn" onclick="toggleEdit(${i})">${m.editing ? 'done' : 'edit'}</button>
         </div>
-        ${isOpen && meal.editingIng
-          ? `<textarea class="ingredients-textarea" id="ing-textarea-${i}">${meal.ingredients.join('\n')}</textarea>`
-          : `<ul class="ingredient-list">${meal.ingredients.map(ing => `<li>${ing}</li>`).join('')}</ul>`
+        ${m.editing
+          ? `<textarea class="ingredients-textarea" id="ing-textarea-${i}">${m.ingredients.join('\n')}</textarea>`
+          : `<ul class="ingredient-list">${m.ingredients.map(ing=>`<li>${ing}</li>`).join('')}</ul>`
         }
-      </div>` : '';
-
-    return `
-      <div class="day-card ${hasRecipe ? 'has-recipe' : ''} ${isOpen ? 'open' : ''}" id="card-${i}">
-        <div class="day-header" onclick="toggleDay(${i})">
-          <div class="day-dot"></div>
-          <div class="day-name">${day}</div>
-          ${hasRecipe ? `<div class="day-meal">${meal.name || 'Recipe saved'}</div>` : ''}
-          <div class="day-chevron">▼</div>
-        </div>
-        ${isOpen ? `
-        <div class="day-body">
-          <div class="field-label">Dish name</div>
-          <input class="field-input" id="name-${i}" placeholder="e.g. Chicken tikka masala" value="${meal.name}">
-
-          <div class="field-label">Recipe link (Instagram, TikTok, website...)</div>
-          <div class="link-row">
-            <input class="field-input" id="link-${i}" placeholder="https://..." value="${meal.link || ''}">
-            <button class="open-link-btn" onclick="openLink(${i})">Open ↗</button>
-          </div>
-          <div style="margin-bottom:10px"></div>
-
-          <button class="ai-btn" id="aibtn-${i}" onclick="generateIngredients(${i})">
-            ✦ Generate ingredients with AI
-          </button>
-
-          ${ingHtml}
-
-          <button class="save-btn" onclick="saveMeal(${i})">Save</button>
-          ${hasRecipe ? `<button class="clear-day-btn" onclick="clearDay(${i})">Clear this day</button>` : ''}
-        </div>` : ''}
       </div>`;
+    }
+
+    return `<div class="day-card ${hasRecipe?'has-recipe':''} ${isOpen?'open':''}" id="card-${i}">
+      <div class="day-header" onclick="toggleDay(${i})">
+        <div class="day-dot"></div>
+        <div class="day-name">${day}</div>
+        ${hasRecipe ? `<div class="day-meal">${m.name||'Recipe saved'}</div>` : `<div class="day-empty">Tap to add</div>`}
+        <div class="day-chevron">▼</div>
+      </div>
+      ${isOpen ? `<div class="day-body">
+        <div class="field-label">Dish name</div>
+        <input class="field-input" id="name-${i}" placeholder="e.g. Chicken tikka masala" value="${m.name}">
+        <div class="field-label">Recipe link (Instagram, TikTok, website...)</div>
+        <div class="link-row">
+          <input class="field-input" id="link-${i}" placeholder="https://..." value="${m.link||''}">
+          ${m.link ? `<button class="open-link-btn" onclick="openLink(${i})">Open ↗</button>` : ''}
+        </div>
+        <button class="ai-btn" id="aibtn-${i}" onclick="generateIngredients(${i})">✦ Generate ingredients with AI</button>
+        ${ingSection}
+        <button class="save-btn" onclick="saveMeal(${i})">Save</button>
+        ${hasRecipe ? `<button class="clear-day-btn" onclick="clearDay(${i})">Clear this day</button>` : ''}
+      </div>` : ''}
+    </div>`;
   }).join('');
 
-  renderSummary();
-}
-
-function toggleEditIng(i) {
-  state.meals[i].editingIng = !state.meals[i].editingIng;
-  render(); openDay = i; render();
-}
-
-function renderSummary() {
-  const filled = state.meals.filter(m => m.name || m.ingredients.length > 0).length;
-  const allIng = [...new Set(state.meals.flatMap(m => m.ingredients))];
-
+  const filled = state.meals.filter(m=>m.name||m.ingredients.length).length;
+  const allIng = [...new Set(state.meals.flatMap(m=>m.ingredients))];
   document.getElementById('summaryBar').innerHTML = `
     <div class="summary-title">This week</div>
-    <div class="summary-count">${filled}<span style="font-size:1rem; color:var(--muted)"> / 7</span></div>
+    <div class="summary-count">${filled}<span style="font-size:1rem;color:var(--muted)"> / 7</span></div>
     <div class="summary-sub">meals planned</div>
-    ${allIng.length > 0 ? `
-    <div class="all-ingredients">
-      <div class="summary-title">All ingredients this week</div>
-      <div class="all-ing-list">
-        ${allIng.map(ing => `<div class="ing-pill">${ing}</div>`).join('')}
-      </div>
-    </div>` : ''}
-  `;
+    ${allIng.length ? `<div class="all-ingredients">
+      <div class="summary-title" style="margin-bottom:6px">All ingredients this week</div>
+      <div class="all-ing-list">${allIng.map(ing=>`<div class="ing-pill">${ing}</div>`).join('')}</div>
+    </div>` : ''}`;
 }
 
 document.getElementById('weekLabel').textContent = (() => {
-  const d = new Date();
-  const day = d.getDay();
-  const mon = new Date(d); mon.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
-  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-  const opts = { day: 'numeric', month: 'short' };
-  return mon.toLocaleDateString('en-CA', opts) + ' – ' + sun.toLocaleDateString('en-CA', opts);
+  const d = new Date(), day = d.getDay();
+  const mon = new Date(d); mon.setDate(d.getDate()-day+(day===0?-6:1));
+  const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+  const o = {day:'numeric',month:'short'};
+  return mon.toLocaleDateString('en-CA',o)+' – '+sun.toLocaleDateString('en-CA',o);
 })();
 
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 render();
 </script>
 </body>

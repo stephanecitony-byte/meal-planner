@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Weekly Meals">
+<meta name="theme-color" content="#0d0d0d">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="meal-icon-192.png">
+<title>Weekly Meals</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d; --surface: #161616; --surface2: #1f1f1f; --border: #2c2c2c;
+    --text: #f5f0e8; --muted: #5a5a5a; --accent: #e8c17a; --accent2: #b87333;
+    --green: #6fcf97; --green-bg: #0d2018; --red: #eb5757; --red-bg: #240e0e;
+    --blue: #60a5fa; --blue-bg: #0e1e2a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; padding-bottom: 100px; padding-top: env(safe-area-inset-top); }
+
+  .header { padding: 2rem 1.25rem 0.75rem; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 44px; height: 44px; background: #1a1608; border: 1px solid var(--accent2); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo-icon svg { width: 24px; height: 24px; }
+  .logo-text { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 400; line-height: 1; }
+  .logo-text em { font-style: italic; color: var(--accent); }
+  .reset-btn { background: var(--red-bg); border: 1px solid var(--red); border-radius: 99px; padding: 7px 14px; font-size: 11px; color: var(--red); font-family: 'Outfit', sans-serif; cursor: pointer; margin-top: 4px; }
+  .week-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 8px; padding-left: 56px; }
+
+  .days-list { padding: 1rem 1.25rem 0; display: flex; flex-direction: column; gap: 10px; }
+
+  .day-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; transition: border-color 0.2s; }
+  .day-card.has-recipe { border-color: #3a3010; }
+  .day-header { display: flex; align-items: center; gap: 12px; padding: 0.9rem 1rem; cursor: pointer; }
+  .day-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+  .day-card.has-recipe .day-dot { background: var(--accent); }
+  .day-name { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); width: 80px; flex-shrink: 0; }
+  .day-card.has-recipe .day-name { color: var(--text); }
+  .day-meal { font-size: 14px; color: var(--accent); font-family: 'Playfair Display', serif; font-style: italic; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .day-empty { font-size: 13px; color: var(--muted); flex: 1; }
+  .day-chevron { color: var(--muted); font-size: 11px; transition: transform 0.2s; flex-shrink: 0; }
+  .day-card.open .day-chevron { transform: rotate(180deg); }
+
+  .day-body { display: none; border-top: 1px solid var(--border); padding: 1rem; }
+  .day-card.open .day-body { display: block; }
+
+  .field-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 5px; }
+  .field-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 0.65rem 0.85rem; font-size: 14px; color: var(--text); font-family: 'Outfit', sans-serif; outline: none; margin-bottom: 10px; }
+  .field-input:focus { border-color: var(--accent); }
+  .field-input::placeholder { color: var(--muted); }
+
+  .methods-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .method-btn { padding: 0.75rem 0.5rem; border-radius: 12px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); font-size: 12px; font-family: 'Outfit', sans-serif; cursor: pointer; text-align: center; transition: all 0.2s; line-height: 1.4; }
+  .method-btn .method-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+  .method-btn.active-name { border-color: var(--accent); color: var(--accent); background: #1a1608; }
+  .method-btn.active-photo { border-color: var(--blue); color: var(--blue); background: var(--blue-bg); }
+
+  .method-panel { display: none; }
+  .method-panel.visible { display: block; }
+
+  .photo-drop { width: 100%; background: var(--surface2); border: 1.5px dashed var(--border); border-radius: 12px; padding: 1.5rem 1rem; text-align: center; cursor: pointer; margin-bottom: 10px; transition: border-color 0.2s; }
+  .photo-drop:active { border-color: var(--blue); }
+  .photo-drop-icon { font-size: 28px; margin-bottom: 6px; }
+  .photo-drop-text { font-size: 13px; color: var(--muted); }
+  .photo-drop-hint { font-size: 11px; color: var(--muted); margin-top: 3px; opacity: 0.6; }
+  .photo-preview { width: 100%; border-radius: 10px; margin-bottom: 10px; max-height: 200px; object-fit: cover; border: 1px solid var(--border); display: none; }
+
+  .ai-btn { width: 100%; padding: 0.75rem; background: #1a1608; border: 1px solid var(--accent2); border-radius: 12px; color: var(--accent); font-size: 13px; font-weight: 500; font-family: 'Outfit', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; transition: opacity 0.2s; }
+  .ai-btn:active { opacity: 0.8; }
+  .ai-btn.loading { opacity: 0.6; pointer-events: none; }
+  .ai-btn.photo-mode { background: var(--blue-bg); border-color: var(--blue); color: var(--blue); }
+  .spinner { width: 14px; height: 14px; border: 2px solid var(--accent2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  .spinner.blue { border-color: #1e3a5a; border-top-color: var(--blue); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .ingredients-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 10px; }
+  .ing-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .ing-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .edit-ing-btn { color: var(--accent); font-size: 11px; cursor: pointer; background: none; border: none; font-family: 'Outfit', sans-serif; padding: 0; }
+  .ingredient-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .ingredient-list li { font-size: 13px; color: var(--text); display: flex; align-items: baseline; gap: 7px; line-height: 1.4; }
+  .ingredient-list li::before { content: '·'; color: var(--accent); font-size: 16px; line-height: 1; flex-shrink: 0; }
+  .ingredients-textarea { width: 100%; background: transparent; border: none; outline: none; color: var(--text); font-size: 13px; font-family: 'Outfit', sans-serif; resize: none; line-height: 1.7; min-height: 80px; }
+
+  .link-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .link-row .field-input { margin-bottom: 0; flex: 1; }
+  .open-link-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 0.65rem 0.85rem; color: var(--accent); font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+
+  .save-btn { width: 100%; padding: 0.75rem; background: var(--accent); color: #0d0d0d; border: none; border-radius: 12px; font-size: 14px; font-weight: 500; font-family: 'Outfit', sans-serif; cursor: pointer; }
+  .save-btn:active { opacity: 0.85; }
+  .clear-day-btn { width: 100%; padding: 0.6rem; background: none; border: 1px solid var(--border); border-radius: 10px; font-size: 12px; color: var(--muted); font-family: 'Outfit', sans-serif; cursor: pointer; margin-top: 6px; }
+
+  .summary-bar { margin: 1.25rem 1.25rem 0; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1rem 1.25rem; }
+  .summary-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 8px; }
+  .summary-count { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--accent); line-height: 1; }
+  .summary-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .all-ingredients { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
+  .all-ing-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .ing-pill { background: var(--surface2); border: 1px solid var(--border); border-radius: 99px; padding: 4px 10px; font-size: 11px; color: var(--text); }
+
+  .toast { position: fixed; top: calc(1rem + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 18px; font-size: 13px; color: var(--text); z-index: 999; transition: transform 0.3s cubic-bezier(0.32,0.72,0,1); white-space: nowrap; max-width: 90vw; text-align: center; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.ok { border-color: var(--green); color: var(--green); }
+  .toast.err { border-color: var(--red); color: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo-wrap">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 3v4c0 1.1.9 2 2 2h0c1.1 0 2-.9 2-2V3" stroke="#e8c17a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M10 9v12" stroke="#e8c17a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M16 3v18" stroke="#e8c17a" stroke-width="2" stroke-linecap="round"/>
+          <path d="M16 9c1.7 0 3-1.3 3-3V3" stroke="#e8c17a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="logo-text">Weekly<br><em>Meals</em></div>
+    </div>
+    <button class="reset-btn" onclick="resetAll()">↺ Reset</button>
+  </div>
+  <div class="week-label" id="weekLabel"></div>
+</div>
+
+<div class="days-list" id="daysList"></div>
+<div class="summary-bar" id="summaryBar"></div>
+
+<script>
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+let state = JSON.parse(localStorage.getItem('mealplanner_v4') || 'null') || {
+  meals: DAYS.map(d => ({ day:d, name:'', link:'', ingredients:[], editing:false }))
+};
+if (state.meals.length !== 7) {
+  state.meals = DAYS.map((d,i) => state.meals[i] || { day:d, name:'', link:'', ingredients:[], editing:false });
+}
+
+let openDay = null;
+let activeMethod = {};
+let photoData = {};
+
+function save() { localStorage.setItem('mealplanner_v4', JSON.stringify(state)); }
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast ' + type + ' show';
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+function resetAll() {
+  if (!confirm('Reset all meals for this week?')) return;
+  state.meals = DAYS.map(d => ({ day:d, name:'', link:'', ingredients:[], editing:false }));
+  openDay = null; activeMethod = {}; photoData = {};
+  save(); render();
+}
+
+function toggleDay(i) {
+  openDay = openDay === i ? null : i;
+  if (!activeMethod[i]) activeMethod[i] = 'name';
+  render();
+  if (openDay === i) setTimeout(() => {
+    document.getElementById('card-'+i)?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }, 100);
+}
+
+function setMethod(i, method) {
+  activeMethod[i] = method;
+  render(); openDay = i; render();
+}
+
+// Compress image to max 1MB before sending to API
+function compressImage(dataUrl, maxWidth, quality) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
+function handlePhoto(i, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const compressed = await compressImage(e.target.result, 1200, 0.75);
+    photoData[i] = compressed;
+    const preview = document.getElementById('photo-preview-'+i);
+    if (preview) { preview.src = compressed; preview.style.display = 'block'; }
+    showToast('Photo loaded — ready!', 'ok');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function generateFromName(i) {
+  const name = document.getElementById('name-'+i).value.trim();
+  const link = document.getElementById('link-'+i).value.trim();
+  if (!name) { showToast('Enter a dish name first', 'err'); return; }
+
+  const btn = document.getElementById('aibtn-name-'+i);
+  btn.classList.add('loading');
+  btn.innerHTML = '<div class="spinner"></div> Generating...';
+
+  const prompt = `You are a cooking assistant. Generate a practical ingredient list in English for: "${name}".
+${link ? 'Recipe reference: ' + link : ''}
+Respond ONLY with a JSON array of strings. Each string = one ingredient with quantity.
+Example: ["2 chicken breasts","1 cup basmati rice","3 garlic cloves","1 tsp cumin","salt and pepper to taste"]
+No preamble, no markdown. Just the raw JSON array.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role:'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '[]';
+    const ingredients = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    state.meals[i] = { ...state.meals[i], name, link: link||state.meals[i].link, ingredients, editing:false };
+    save(); openDay = i; render();
+    showToast('✓ Ingredients generated!', 'ok');
+  } catch(e) {
+    showToast('Error — try again', 'err');
+    btn.classList.remove('loading');
+    btn.innerHTML = '✦ Generate ingredients with AI';
+  }
+}
+
+async function generateFromPhoto(i) {
+  const photo = photoData[i];
+  if (!photo) { showToast('Upload a photo first', 'err'); return; }
+
+  const btn = document.getElementById('aibtn-photo-'+i);
+  btn.classList.add('loading');
+  btn.innerHTML = '<div class="spinner blue"></div> Reading recipe...';
+
+  const base64 = photo.split(',')[1];
+
+  const prompt = `Look at this recipe screenshot. Extract ALL ingredients listed.
+If you can see the dish name, return it on the first line as: DISH: [name]
+Then return a JSON array of ingredient strings with quantities.
+
+Format:
+DISH: Coconut Red Curry Chicken
+["300g chicken sliced","1 can coconut milk","2 tbsp red curry paste"]
+
+Only the DISH line and JSON array. Nothing else.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      showToast('API error: ' + (data.error.message || 'unknown'), 'err');
+      btn.classList.remove('loading');
+      btn.innerHTML = '📷 Read ingredients from photo';
+      return;
+    }
+
+    const raw = (data.content?.[0]?.text || '').trim();
+    const lines = raw.split('\n').filter(l => l.trim());
+
+    let dishName = state.meals[i].name;
+    let jsonStr = raw;
+
+    if (lines[0] && lines[0].startsWith('DISH:')) {
+      dishName = lines[0].replace('DISH:', '').trim();
+      jsonStr = lines.slice(1).join('\n');
+    }
+
+    const ingredients = JSON.parse(jsonStr.replace(/```json|```/g,'').trim());
+
+    const nameInput = document.getElementById('name-'+i);
+    if (nameInput && !nameInput.value.trim() && dishName) nameInput.value = dishName;
+
+    state.meals[i] = { ...state.meals[i], name: dishName || state.meals[i].name, ingredients, editing:false };
+    save(); openDay = i; render();
+    showToast('✓ Recipe read from photo!', 'ok');
+  } catch(e) {
+    showToast('Could not read — try again', 'err');
+    btn.classList.remove('loading');
+    btn.innerHTML = '📷 Read ingredients from photo';
+  }
+}
+
+function saveMeal(i) {
+  const name = document.getElementById('name-'+i)?.value.trim() || state.meals[i].name;
+  const link = document.getElementById('link-'+i)?.value.trim() || state.meals[i].link;
+  const ta = document.getElementById('ing-textarea-'+i);
+  const ingredients = ta ? ta.value.split('\n').map(l=>l.trim()).filter(Boolean) : state.meals[i].ingredients;
+  state.meals[i] = { ...state.meals[i], name, link, ingredients, editing:false };
+  save(); openDay = null; render();
+  showToast('✓ Saved!', 'ok');
+}
+
+function clearDay(i) {
+  if (!confirm('Clear this day?')) return;
+  state.meals[i] = { day:DAYS[i], name:'', link:'', ingredients:[], editing:false };
+  delete photoData[i];
+  save(); openDay = null; render();
+}
+
+function openLink(i) {
+  const link = document.getElementById('link-'+i)?.value.trim() || state.meals[i].link;
+  if (link) window.open(link, '_blank');
+  else showToast('No link entered', 'err');
+}
+
+function toggleEdit(i) {
+  state.meals[i].editing = !state.meals[i].editing;
+  save(); openDay = i; render();
+}
+
+function render() {
+  document.getElementById('daysList').innerHTML = DAYS.map((day, i) => {
+    const m = state.meals[i];
+    const hasRecipe = !!(m.name || m.ingredients.length);
+    const isOpen = openDay === i;
+    const method = activeMethod[i] || 'name';
+
+    let ingSection = '';
+    if (m.ingredients.length > 0) {
+      ingSection = `<div class="ingredients-box">
+        <div class="ing-header">
+          <span class="ing-title">Ingredients (${m.ingredients.length})</span>
+          <button class="edit-ing-btn" onclick="toggleEdit(${i})">${m.editing?'done':'edit'}</button>
+        </div>
+        ${m.editing
+          ? `<textarea class="ingredients-textarea" id="ing-textarea-${i}">${m.ingredients.join('\n')}</textarea>`
+          : `<ul class="ingredient-list">${m.ingredients.map(ing=>`<li>${ing}</li>`).join('')}</ul>`
+        }
+      </div>`;
+    }
+
+    const namePanel = `<div class="method-panel ${method==='name'?'visible':''}">
+      <div class="field-label">Dish name</div>
+      <input class="field-input" id="name-${i}" placeholder="e.g. Creamy salmon pasta" value="${m.name}">
+      <div class="field-label">Recipe link (optional)</div>
+      <div class="link-row">
+        <input class="field-input" id="link-${i}" placeholder="https://..." value="${m.link||''}">
+        ${m.link ? `<button class="open-link-btn" onclick="openLink(${i})">Open ↗</button>` : ''}
+      </div>
+      <button class="ai-btn" id="aibtn-name-${i}" onclick="generateFromName(${i})">✦ Generate ingredients with AI</button>
+    </div>`;
+
+    const photoPanel = `<div class="method-panel ${method==='photo'?'visible':''}">
+      <div class="field-label">Screenshot of the recipe</div>
+      <div class="photo-drop" onclick="document.getElementById('photo-input-${i}').click()">
+        <input type="file" id="photo-input-${i}" accept="image/*" onchange="handlePhoto(${i}, this)" style="display:none">
+        <div class="photo-drop-icon">📷</div>
+        <div class="photo-drop-text">Tap to upload screenshot</div>
+        <div class="photo-drop-hint">Instagram, TikTok, any recipe source</div>
+      </div>
+      <img id="photo-preview-${i}" class="photo-preview" alt="Recipe photo" ${photoData[i]?`style="display:block" src="${photoData[i]}"`:''}>
+      <div class="field-label">Dish name (optional)</div>
+      <input class="field-input" id="name-${i}" placeholder="e.g. Coconut curry chicken" value="${m.name}">
+      <div class="field-label">Recipe link (optional — to open later)</div>
+      <div class="link-row">
+        <input class="field-input" id="link-${i}" placeholder="https://instagram.com/..." value="${m.link||''}">
+        ${m.link ? `<button class="open-link-btn" onclick="openLink(${i})">Open ↗</button>` : ''}
+      </div>
+      <button class="ai-btn photo-mode" id="aibtn-photo-${i}" onclick="generateFromPhoto(${i})">📷 Read ingredients from photo</button>
+    </div>`;
+
+    return `<div class="day-card ${hasRecipe?'has-recipe':''} ${isOpen?'open':''}" id="card-${i}">
+      <div class="day-header" onclick="toggleDay(${i})">
+        <div class="day-dot"></div>
+        <div class="day-name">${day}</div>
+        ${hasRecipe ? `<div class="day-meal">${m.name||'Recipe saved'}</div>` : `<div class="day-empty">Tap to add</div>`}
+        <div class="day-chevron">▼</div>
+      </div>
+      ${isOpen ? `<div class="day-body">
+        <div class="methods-row">
+          <button class="method-btn ${method==='name'?'active-name':''}" onclick="setMethod(${i},'name')">
+            <span class="method-icon">✦</span>By dish name
+          </button>
+          <button class="method-btn ${method==='photo'?'active-photo':''}" onclick="setMethod(${i},'photo')">
+            <span class="method-icon">📷</span>From photo
+          </button>
+        </div>
+        ${namePanel}
+        ${photoPanel}
+        ${ingSection}
+        <button class="save-btn" onclick="saveMeal(${i})">Save</button>
+        ${hasRecipe ? `<button class="clear-day-btn" onclick="clearDay(${i})">Clear this day</button>` : ''}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+
+  const filled = state.meals.filter(m=>m.name||m.ingredients.length).length;
+  const allIng = [...new Set(state.meals.flatMap(m=>m.ingredients))];
+  document.getElementById('summaryBar').innerHTML = `
+    <div class="summary-title">This week</div>
+    <div class="summary-count">${filled}<span style="font-size:1rem;color:var(--muted)"> / 7</span></div>
+    <div class="summary-sub">meals planned</div>
+    ${allIng.length ? `<div class="all-ingredients">
+      <div class="summary-title" style="margin-bottom:6px">All ingredients this week</div>
+      <div class="all-ing-list">${allIng.map(ing=>`<div class="ing-pill">${ing}</div>`).join('')}</div>
+    </div>` : ''}`;
+}
+
+document.getElementById('weekLabel').textContent = (() => {
+  const d = new Date(), day = d.getDay();
+  const mon = new Date(d); mon.setDate(d.getDate()-day+(day===0?-6:1));
+  const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+  const o = {day:'numeric',month:'short'};
+  return mon.toLocaleDateString('en-CA',o)+' – '+sun.toLocaleDateString('en-CA',o);
+})();
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+render();
+</script>
+</body>
+</html>
